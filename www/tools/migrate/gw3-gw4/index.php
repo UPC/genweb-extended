@@ -5,13 +5,13 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Genweb3 to Genweb4 migration tool</title>
+    <title>Genweb3 to Genweb4 helper</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="<?php echo $url; ?>/++genwebupc++stylesheets/genwebupc.css">
     <link rel="stylesheet" href="<?php echo $url; ?>/dynamic.css">
 </head>
 <body style="background-color:#eee">
-    <h1>Genweb3 to Genweb4 migration tool</h1>
+    <h1>Genweb3 to Genweb4 helper</h1>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="js/migrate.js"></script>
@@ -19,10 +19,10 @@
       $(function() {
           $('#btn-migrate').click(function() {
               var $gw3 = $('<div/>').html($('#text-gw3').val());
-              var $gw4 = caminstech_migrate($gw3);
+              var $gw4 = gw4e_migrate($gw3);
               $('#text-gw4').val($gw3.html());
               $('#content').html($gw3.html());
-              caminstech_translate_images('<?php echo $url; ?>', $('#content'));
+              gw4e_translate_images('<?php echo $url; ?>', $('#content'));
           });
       });
     </script>
