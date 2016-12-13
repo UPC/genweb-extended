@@ -13,6 +13,42 @@ $(function() {
         $container.removeClass('hidden');
     }
 
+    function youtube($element) {
+        var id = $element.attr('data-id');
+        var ratio = $element.attr('data-ratio');
+        ratio = ratio ? ratio : '16:9';
+
+        var options = 'autoplay=1&autohide=1&rel=0&controls=1&iv_load_policy=3&modestbranding=1&showinfo=0';
+        var wrapperCss = 'position:relative;padding-bottom:' + ratio2percent(ratio) + '%;height:0;';
+        var videoCss  = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+        var url = '//www.youtube.com/embed/' + id + '?' + options;
+        var $container = $element.find('.gw4e-content').html('');
+        var $video = $('<div style="' + wrapperCss + '"><iframe style="' + videoCss + '" src="' + url + '" allowfullscreen></iframe></div>');
+        $container.append($video);
+        $container.removeClass('hidden');
+    }
+
+    function video($element) {
+        var url = $element.attr('data-url');
+        var ratio = $element.attr('data-ratio');
+        ratio = ratio ? ratio : '16:9';
+
+        var $video = $('<video style="width:100%;height:' + ratio2percent(ratio) + '%" src="' + url + '" controls autoplay></video>');
+        var $container = $element.find('.gw4e-content').html('');
+        $container.append($video);
+        $container.removeClass('hidden');
+    }
+
+    function ratio2percent(ratio) {
+        var x = 16, y = 9;
+        var values = ratio.split(':');
+        if (values.length == 2 && values[0] > 0 && values[1] > 0) {
+            x = values[0];
+            y = values[1];
+        }
+        return (100.0 * y) / x;
+    }
+
     function setPortletList($element, portletListCreator, portletListItemCreator) {
         $.ajax({
             url: $element.attr('data-url'),
@@ -170,5 +206,13 @@ $(function() {
 
     $('div.gw4e-carousel').each(function(index, element) {
         carousel($(element));
+    });
+
+    $('div.gw4e-youtube').each(function(index, element) {
+        youtube($(element));
+    });
+
+    $('div.gw4e-video').each(function(index, element) {
+        video($(element));
     });
 });

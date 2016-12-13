@@ -8,10 +8,12 @@ vagrant up
 
 Accedir a l'adreça https://192.168.33.33.
 
-
 ## Configuració
 
 Utilitats que faciliten la integració d'elements externs als genweb (versió 4) de la UPC.
+
+  - Versió 2.3.2 de bootstrap.
+  - Versió 1.8.3 de jQuery.
 
 ### Element del DOM eliminat
 
@@ -25,7 +27,7 @@ Utilitats que faciliten la integració d'elements externs als genweb (versió 4)
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
 <div class="gw4e-iframe" data-url="https://portal.camins.upc.edu/oferta/conveni/public/cercaOfertes.htm">
-<div class="gw4e-content hidden">#</div>
+    <div class="gw4e-content hidden">#</div>
 </div>
 ```
 
@@ -33,6 +35,24 @@ Al contingut de l'iframe caldria afegir.
 
 ```html
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.5/iframeResizer.contentWindow.min.js"></script>
+```
+
+### Vídeo (Youtube)
+
+```html
+<script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
+<div class="gw4e-youtube" data-id="YBAD7Bj2weA" data-ratio="16:9">
+    <div class="gw4e-content hidden">#</div>
+</div>
+```
+
+### Vídeo (HTML5)
+
+```html
+<script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
+<div class="gw4e-video" data-url="http://www.jplayer.org/video/ogv/Big_Buck_Bunny_Trailer.ogv" data-ratio="16:9">
+    <div class="gw4e-content hidden">#</div>
+</div>
 ```
 
 ### Portlet bàsic
