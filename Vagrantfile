@@ -3,8 +3,8 @@
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
+  config.vm.network "private_network", ip: "192.168.22.22"
   config.vm.hostname = "gw4e"
-  config.vm.network "forwarded_port", guest: 443, host: 8443
   config.vm.provider "virtualbox" do |vb|
     vb.name = "gw4e"
     vb.memory = "256"

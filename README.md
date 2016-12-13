@@ -1,10 +1,13 @@
 # Genweb4 extended (gw4e)
 
-## Instal·lació
+## Desenvolupament
 
 ```sh
 vagrant up
 ```
+
+Accedir a l'adreça https://192.168.33.33.
+
 
 ## Configuració
 
