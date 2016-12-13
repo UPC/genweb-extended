@@ -29,7 +29,7 @@ Utilitats que faciliten la integració d'elements externs als genweb (versió 4)
 Al contingut de l'iframe caldria afegir.
 
 ```html
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.5/iframeResizer.contentWindow.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.5/iframeResizer.contentWindow.min.js"></script>
 ```
 
 ### Portlet bàsic
