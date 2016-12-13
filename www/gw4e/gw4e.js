@@ -49,8 +49,11 @@ $(function() {
                 $item = carouselListItemCreator($container, json[i]);
                 if (i + 1 == active) $item.addClass('active');
             }
+            // Evita la configuració de genweb4 border-radius: 0px
             $element.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
-            $element.find('.carousel').carousel();
+
+            var interval = $element.attr('data-interval');
+            $element.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
             $element.find('.gw4e-content').removeClass('hidden');
         });
     }

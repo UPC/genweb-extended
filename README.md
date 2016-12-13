@@ -95,7 +95,7 @@ callback([
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-item-active="">
+<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-interval="10" data-item-active="">
     <h2>Treballs finals de Grau i Màster</h2>
     <div class="gw4e-content hidden">#</div>
 </div>
