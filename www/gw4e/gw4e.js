@@ -6,7 +6,7 @@ $(function() {
 
     function setIframe($element) {
         var $container = $element.find('.gw4e-content').html('');
-        var $iframe = $('<iframe frameborder="0" scrolling="no" width="100%"></iframe>')
+        var $iframe = $('<iframe frameborder="0" scrolling="no" width="100%" height="1000"></iframe>')
             .attr('src', $element.attr('data-url'));
         $container.append($iframe);
         $iframe.iFrameResize([{}]);
