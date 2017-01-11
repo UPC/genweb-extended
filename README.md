@@ -82,6 +82,26 @@ callback([
 ])
 ```
 
+### Llista d'elements
+
+```html
+<script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
+<div class="gw4e-list" data-url="https://actualitat.camins.upc.edu/ca/noticies.json/2?callback=callback" data-count="5" data-attribute="nom">
+  <ul class="gw4e-content hidden">#</ul>
+</div>
+```
+El format JSONP ha de ser el següent.
+
+```js
+callback([
+    {
+        "nom" : "Nom de l'element"
+    },
+    ....
+])
+```
+
+
 ### Portlet ampliat
 
 ```html
@@ -115,7 +135,7 @@ callback([
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-interval="10" data-item-active="">
+<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-interval="10">
     <h2>Treballs finals de Grau i Màster</h2>
     <div class="gw4e-content hidden">#</div>
 </div>

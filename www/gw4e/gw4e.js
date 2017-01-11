@@ -1,46 +1,35 @@
 $(function() {
-    var loadPortletList = function($element, listCreator, listItemCreator) {
-        $.ajax({
-            url: $element.attr('data-url'),
-            dataType: 'jsonp',
-        }).done(function(json) {
-            var first = 0
-            var last = 0;
-            var start = parseInt($element.attr('data-start'));
-            var count = parseInt($element.attr('data-count'));
-            if (start) first = Math.max(0, start - 1);
-            if (count) last = Math.min(json.length, first + count)
-            var $container = listCreator($element.find('.gw4e-content').html(''));
-            for(var i=first; i<last; i++) {
-                $item = listItemCreator($container, json[i]);
-            }
-            $element.find('.gw4e-content').removeClass('hidden');
-        });
-    };
-
-    var loadCarouselList = function($element, listCreator, listItemCreator) {
+    var loadList = function($element, contentCreator, itemCreator) {
+        var deferred = new $.Deferred();
         $.ajax({
             url: $element.attr('data-url'),
             dataType: 'jsonp',
         }).done(function(json) {
             if (json.length == 0) return;
 
-            var active = $element.attr('data-item-active');
-            if (!active) Math.floor((Math.random() * json.length) + 1);
-            active = Math.max(1, active);
-            active = Math.min(active, json.length);
+            var start = parseInt($element.attr('data-start'));
+            if (!start) start = 1;
+            var count = parseInt($element.attr('data-count'));
+            if (!count) count = json.length;
 
-            var $container = listCreator($element.find('.gw4e-content').html(''));
-            for(var i=0; i<json.length; i++) {
-                $item = listItemCreator($container, json[i]);
-                if (i + 1 == active) $item.addClass('active');
+            var first = Math.max(0, start - 1);
+            var last = Math.min(json.length, first + count)
+            var $container = contentCreator($element.find('.gw4e-content').html(''));
+            for(var i=first; i<last; i++) {
+                $item = itemCreator($container, json[i], i + 1);
             }
+            $element.find('.gw4e-content').removeClass('hidden');
+            deferred.resolve();
+        });
+        return deferred;
+    };
+
+    var loadCarousel = function($element, contentCreator, itemCreator) {
+        loadList($element, contentCreator, itemCreator).then(function() {
             // Evita la configuració de genweb4 border-radius: 0px
             $element.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
-
             var interval = $element.attr('data-interval');
             $element.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
-            $element.find('.gw4e-content').removeClass('hidden');
         });
     };
 
@@ -54,15 +43,8 @@ $(function() {
         return (100.0 * y) / x;
     };
 
-    jQuery.getCachedScript = function(url, options) {
-        options = $.extend( options || {}, {
-            dataType: "script",
-            cache: true,
-            url: url
-        });
-        return jQuery.ajax( options );
-    };
-
+    // Atributs HTML
+    //   - data-selector: Selector CSS dels elements a ocultar.
     jQuery.fn.gw4eRemoveElement = function() {
         var $this = $(this);
         var selector = $this.attr('data-selector');
@@ -70,6 +52,8 @@ $(function() {
         return this;
     };
 
+    // Atributs HTML
+    //   - data-url: Adreça URL de l'iframe
     jQuery.fn.gw4eIframe = function() {
         var $this = $(this);
         var $container = $this.find('.gw4e-content').html('');
@@ -83,6 +67,9 @@ $(function() {
         return this;
     };
 
+    // Atributs HTML
+    //   - data-url: Vídeo url
+    //   - data-ratio: Ratio del vídeo (default=16:9)
     jQuery.fn.gw4eYoutube = function() {
         var $this = $(this);
         var id = $this.attr('data-id');
@@ -100,6 +87,9 @@ $(function() {
         return this;
     };
 
+    // Atributs HTML
+    //   - data-url: Vídeo url
+    //   - data-ratio: Ratio del vídeo (default=16:9)
     jQuery.fn.gw4eVideo = function() {
         var $this = $(this);
         var url = $this.attr('data-url');
@@ -113,9 +103,14 @@ $(function() {
         return this;
     };
 
+    // Atributs HTML
+    //   - data-url: Data source url (jsonp format)
+    //   - data-start: Primer element a mostrar (default=1)
+    //   - data-count: Número d'elements a mostrar (default=all)
+    //   - data-interval: Segons entre imatges.
     jQuery.fn.gw4eCarousel = function() {
         var $this = $(this);
-        var listCreator = function ($container) {
+        var contentCreator = function ($container) {
             var id = $('<div></div>').uniqueId().attr('id');
             var $content = $(
                 '<div class="carousel slide" id="' + id + '">' +
@@ -127,13 +122,16 @@ $(function() {
             $container.append($content);
             return $content;
         };
-        var listItemCreator = function ($container, json) {
+        var itemCreator = function ($container, json, position) {
            var $content = $(
                '<div class="item" style="height:20em">' +
                    '<a href=""><img src="" style="width:100%;height:100%;object-fit:cover"/>' +
                    '<div class="carousel-caption"><h3></h3><h4></h4></div></a>' +
                '</div>'
            );
+           if (position == 1) {
+               $content.addClass('active');
+           }
            $content.find('a').attr('href', json.urlResum);
            $content.find('a').attr('title', json.titol);
            $content.find('img').attr('src', json.urlFoto);
@@ -144,18 +142,22 @@ $(function() {
            $container.find('.carousel-inner').append($content);
            return $content;
        };
-       loadCarouselList($this, listCreator, listItemCreator);
+       loadCarousel($this, contentCreator, itemCreator);
     };
 
+    // Atributs HTML
+    //   - data-url: Data source url (jsonp format)
+    //   - data-start: Primer element a mostrar (default=1)
+    //   - data-count: Número d'elements a mostrar (default=all)
     jQuery.fn.gw4eActualitat = function() {
         var $this = $(this);
 
-        var listCreator = function ($element) {
+        var contentCreator = function ($element) {
             $content = $('<ul class="list-portlet"></ul>');
             $element.append($content);
             return $content;
         };
-        var listItemCreator = function ($element, json) {
+        var itemCreator = function ($element, json, position) {
             $content = $('<li><a href="" target="_blank" title=""><img style="margin-left:5px;" class="link_blank" alt="(open in new window)" src="++genweb++static/images/icon_blank.gif"></a></li>');
             $content.find('a')
                 .attr('href', json.url)
@@ -169,19 +171,23 @@ $(function() {
             return $content;
         };
 
-        loadPortletList($this, listCreator, listItemCreator);
+        loadList($this, contentCreator, itemCreator);
         return this;
     };
 
+    // Atributs HTML
+    //   - data-url: Data source url (jsonp format)
+    //   - data-start: Primer element a mostrar (default=1)
+    //   - data-count: Número d'elements a mostrar (default=all)
     jQuery.fn.gw4eActualitatLarge = function() {
         var $this = $(this);
 
-        var listCreator = function ($element) {
+        var contentCreator = function ($element) {
             $content = $('<div class="container-fluid">');
             $element.append($content);
             return $content;
         };
-        var listItemCreator = function ($element, json) {
+        var itemCreator = function ($element, json, position) {
             $content = $('<div class="row"><div><a><img src="" /></a></div><div><h3><a href=""></a></h3></div></div>');
             $first = $content.children().first();
             $second = $content.children().last();
@@ -208,7 +214,30 @@ $(function() {
             return $content;
         };
 
-        loadPortletList($this, listCreator, listItemCreator);
+        loadList($this, contentCreator, itemCreator);
+        return this;
+    };
+
+    // Atributs HTML
+    //   - data-url: Data source url (jsonp format)
+    //   - data-start: Primer element a mostrar (default=1)
+    //   - data-count: Número d'elements a mostrar (default=all)
+    //   - data-attribute: Nom del camp que cal mostrar
+    jQuery.fn.gw4eList = function() {
+        var $this = $(this);
+
+        var contentCreator = function ($element) {
+            var $container = $this.find('.gw4e-content').html('');
+            return $container;
+        };
+        var itemCreator = function ($element, json, position) {
+            var attribute = $this.attr('data-attribute');
+            $content = $('<li>' + json[attribute] + '</li>');
+            $element.append($content);
+            return $content;
+        };
+
+        loadList($this, contentCreator, itemCreator);
         return this;
     };
 
@@ -230,6 +259,10 @@ $(function() {
 
     $('div.gw4e-video').each(function(index, element) {
         $(element).gw4eVideo();
+    });
+
+    $('div.gw4e-list').each(function(index, element) {
+        $(element).gw4eList();
     });
 
     $('div.gw4e-actualitat').each(function(index, element) {
