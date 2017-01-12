@@ -8,6 +8,13 @@ include 'apache::mod::php', 'apache::mod::rewrite'
 
 apache::vhost { 'gw4e':
   servername => 'gw4e',
+  port    => '80',
+  ssl     => false,
+  docroot => "/vagrant/www"
+}
+
+apache::vhost { 'gw4e-ssl':
+  servername => 'gw4e',
   port    => '443',
   ssl     => true,
   docroot => "/vagrant/www"
