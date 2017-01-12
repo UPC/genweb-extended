@@ -1,12 +1,32 @@
 $(function() {
-    var loadList = function($element, contentCreator, itemCreator) {
+    $.compact = function(object) {
+        var recursive = function(object, prefix) {
+            result = {};
+            for (key in object) {
+                value = object[key];
+                if (typeof value === 'object')
+                    result = $.extend(result, recursive(value, prefix + key + '.'));
+                else
+                    result[prefix + key] = value;
+            }
+            return result;
+        }
+        return recursive(object, '');
+    }
+
+    var loadList = function($element, $container, template) {
         var deferred = new $.Deferred();
+        deferred = deferred.done(function() {
+            $element.find('.gw4e-content').html($container).removeClass('hidden');
+        });
+
+        var type = $element.attr('data-type');
+        if (!type) type = 'json';
+
         $.ajax({
             url: $element.attr('data-url'),
-            dataType: 'jsonp',
+            dataType: type,
         }).done(function(json) {
-            if (json.length == 0) return;
-
             var start = parseInt($element.attr('data-start'));
             if (!start) start = 1;
             var count = parseInt($element.attr('data-count'));
@@ -14,23 +34,22 @@ $(function() {
 
             var first = Math.max(0, start - 1);
             var last = Math.min(json.length, first + count)
-            var $container = contentCreator($element.find('.gw4e-content').html(''));
             for(var i=first; i<last; i++) {
-                $item = itemCreator($container, json[i], i + 1);
+                var tags = $.compact(json[i]);
+                var $item = template(json[i], i);
+                var html = $item.html();
+                $.each(Object.keys(tags), function(index, value) {
+                    var re = new RegExp('\\$\\{' + value + '\\}', 'g');
+                    html = html.replace(re, tags[value]);
+                });
+                $container.append($item.html(html));
             }
-            $element.find('.gw4e-content').removeClass('hidden');
-            deferred.resolve();
+            if (first >= last) $container.html($element.attr('data-no-items'));
+            return deferred.resolve();
+        }).fail(function() {
+            return deferred.reject();
         });
         return deferred;
-    };
-
-    var loadCarousel = function($element, contentCreator, itemCreator) {
-        loadList($element, contentCreator, itemCreator).then(function() {
-            // Evita la configuració de genweb4 border-radius: 0px
-            $element.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
-            var interval = $element.attr('data-interval');
-            $element.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
-        });
     };
 
     var ratioToHeightPercent = function(ratio) {
@@ -105,140 +124,93 @@ $(function() {
 
     // Atributs HTML
     //   - data-url: Data source url (jsonp format)
+    //   - data-type: [json|jsonp] (default=json)
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
     //   - data-interval: Segons entre imatges.
     jQuery.fn.gw4eCarousel = function() {
         var $this = $(this);
-        var contentCreator = function ($container) {
-            var id = $('<div></div>').uniqueId().attr('id');
-            var $content = $(
-                '<div class="carousel slide" id="' + id + '">' +
-                    '<div class="carousel-inner"></div>' +
-                    '<a class="carousel-control left" href="#' + id + '" data-slide="prev">‹</a>' +
-                    '<a class="carousel-control right" href="#' + id + '" data-slide="next">›</a>' +
-                '</div>'
-            );
-            $container.append($content);
-            return $content;
-        };
-        var itemCreator = function ($container, json, position) {
-           var $content = $(
-               '<div class="item" style="height:20em">' +
-                   '<a href=""><img src="" style="width:100%;height:100%;object-fit:cover"/>' +
-                   '<div class="carousel-caption"><h3></h3><h4></h4></div></a>' +
-               '</div>'
-           );
-           if (position == 1) {
-               $content.addClass('active');
-           }
-           $content.find('a').attr('href', json.urlResum);
-           $content.find('a').attr('title', json.titol);
-           $content.find('img').attr('src', json.urlFoto);
-           $content.find('img').attr('alt', json.titol);
-           $content.find('img').attr('title', json.titol);
-           $content.find('h3').html(json.titol);
-           $content.find('h4').html(json.autor);
-           $container.find('.carousel-inner').append($content);
-           return $content;
+        var id = $('<div></div>').uniqueId().attr('id');
+        var $container = $('<div class="carousel slide" id="' + id + '">' +
+                             '<div class="carousel-inner"></div>' +
+                             '<a class="carousel-control left" href="#' + id + '" data-slide="prev">‹</a>' +
+                             '<a class="carousel-control right" href="#' + id + '" data-slide="next">›</a>' +
+                           '</div>');
+        var template = function(json, position) {
+           var $item = $('<div class="item" style="height:20em">' +
+                             '<a href="${urlResum}" title="${titol}"><img src="${urlFoto}" alt="${titol}" title="${titol}" style="width:100%;height:100%;object-fit:cover"/>' +
+                             '<div class="carousel-caption"><h3>${titol}</h3><h4>${autor}</h4></div></a>' +
+                           '</div>');
+           if (position == 0) $item.addClass('active');
+           return $item;
        };
-       loadCarousel($this, contentCreator, itemCreator);
+       $this.html($container);
+       loadList($this, $container.find('.carousel-inner'), template).done(function() {
+           // Evita la configuració de genweb4 border-radius: 0px
+           $this.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
+           var interval = $this.attr('data-interval');
+           $this.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
+       });
+       return this;
     };
 
     // Atributs HTML
     //   - data-url: Data source url (jsonp format)
+    //   - data-type: [json|jsonp] (default=json)
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
+    //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
     jQuery.fn.gw4eActualitat = function() {
         var $this = $(this);
 
-        var contentCreator = function ($element) {
-            $content = $('<ul class="list-portlet"></ul>');
-            $element.append($content);
-            return $content;
+        var $container = $('<ul class="list-portlet"></ul>');
+        var template = function(json, position) {
+            var $item = $('<li><a href="${url}" title="${titol}" target="_blank">${titol}<img style="margin-left:5px;" class="link_blank" alt="(open in new window)" src="++genweb++static/images/icon_blank.gif"></a></li>');
+            $item.find('a').click(function(event) {
+                event.preventDefault();
+                window.open($(this).attr('href'), '_blank', 'width=800,height=600,scrollbars=yes');
+            });
+            return $item;
         };
-        var itemCreator = function ($element, json, position) {
-            $content = $('<li><a href="" target="_blank" title=""><img style="margin-left:5px;" class="link_blank" alt="(open in new window)" src="++genweb++static/images/icon_blank.gif"></a></li>');
-            $content.find('a')
-                .attr('href', json.url)
-                .attr('title', json.titol)
-                .prepend(json.titol + ' ')
-                .click(function(event) {
-                    event.preventDefault();
-                    window.open($(this).attr('href'), '_blank', 'width=800,height=600,scrollbars=yes');
-                });
-            $element.append($content);
-            return $content;
-        };
-
-        loadList($this, contentCreator, itemCreator);
+        loadList($this, $container, template);
         return this;
     };
 
     // Atributs HTML
     //   - data-url: Data source url (jsonp format)
+    //   - data-type: [json|jsonp] (default=json)
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
+    //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
     jQuery.fn.gw4eActualitatLarge = function() {
         var $this = $(this);
 
-        var contentCreator = function ($element) {
-            $content = $('<div class="container-fluid">');
-            $element.append($content);
-            return $content;
+        var $container = $('<div class="container-fluid"></div>');
+        var template = function(json, position) {
+            var first = '<a href="${url}" title="${titol}"><img src="${imatge.src}" alt="${imatge.alt}"/></a>';
+            var second = '<h3><a href="${url}" title="${titol}">${titol}</a></h3>${resum}</div>';
+            if (json.imatge)
+                return $('<div class="row"><div class="span3">' + first + '</div><div class="span9">' + second + '</div></div>');
+            else
+                return $('<div class="row"><div class="span12">' + second + '</div></div>');
         };
-        var itemCreator = function ($element, json, position) {
-            $content = $('<div class="row"><div><a><img src="" /></a></div><div><h3><a href=""></a></h3></div></div>');
-            $first = $content.children().first();
-            $second = $content.children().last();
-            if (json.imatge) {
-                $first.addClass('span3');
-                $first.find('a')
-                    .attr('href', json.url)
-                    .attr('title', json.titol);
-                $first.find('img')
-                    .attr('src', json.imatge.src)
-                    .attr('alt', json.imatge.alt);
-                $second.addClass('span9');
-            }
-            else {
-                $first.remove();
-                $second.addClass('span12');
-            }
-            $second.find('h3 a')
-                .attr('href', json.url)
-                .attr('title', json.titol)
-                .html(json.titol);
-            $second.find('h3').after(json.resum);
-            $element.append($content);
-            return $content;
-        };
-
-        loadList($this, contentCreator, itemCreator);
+        loadList($this, $container, template);
         return this;
     };
 
     // Atributs HTML
     //   - data-url: Data source url (jsonp format)
+    //   - data-item-template: Plantilla de l'item. Es poden utilitzar els tags ${nom-atribut}
+    //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
+    //   - data-type: [json|jsonp] (default=json)
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
-    //   - data-attribute: Nom del camp que cal mostrar
     jQuery.fn.gw4eList = function() {
         var $this = $(this);
-
-        var contentCreator = function ($element) {
-            var $container = $this.find('.gw4e-content').html('');
-            return $container;
-        };
-        var itemCreator = function ($element, json, position) {
-            var attribute = $this.attr('data-attribute');
-            $content = $('<li>' + json[attribute] + '</li>');
-            $element.append($content);
-            return $content;
-        };
-
-        loadList($this, contentCreator, itemCreator);
-        return this;
+        var $container = $('<div></div>');
+        var template = function(json, position) { return $($this.attr('data-item-template')); };
+        loadList($this, $container, template);
+        return $this;
     };
 
     $('div.gw4e-iframe').each(function(index, element) {
