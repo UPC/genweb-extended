@@ -59,7 +59,10 @@ Al contingut de l'iframe caldria afegir.
 
 ```html
 <script src="https://www3.camins.upc.edu/actualitat/js/gw4.js" type="text/javascript"></script>
-<div class="gw4e-actualitat" data-url="https://actualitat.camins.upc.edu/activitats.json/2?callback=callback" data-start="0" data-count="5">
+<div class="gw4e-actualitat"
+    data-url="https://actualitat.camins.upc.edu/activitats.json/2" data-type="json"
+    data-start="0" data-count="5"
+    data-no-items="No hi ha cap notícia.">
     <div class="portlet">
         <h2>Activitats <i class="icon-event large-icon pull-right"></i></h2>
         <div class="gw4e-content hidden">#</div>
@@ -70,80 +73,90 @@ Al contingut de l'iframe caldria afegir.
     </div>
 </div>
 ```
-El format JSONP ha de ser el següent.
+El format JSON ha de ser el següent.
 
 ```js
-callback([
+[
     {
         "titol" : "",
         "url" : ""
     },
     ....
-])
+]
+```
+
+### Portlet ampliat
+
+```html
+<script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
+<div class="gw4e-actualitat-large"
+     data-url="https://actualitat.camins.upc.edu/activitats.json/2" data-type="json"
+     data-start="0" data-count="5"
+     data-no-items="No hi ha cap notícia.">
+    <div class="portlet">
+        <h2>Notícies <i class="icon-news large-icon pull-right"></i></h2>
+        <div class="gw4e-content hidden">#</div>
+        <div class="portlet-footer">
+            <a href="https://actualitat.camins.upc.edu/noticies/2" target="_blank">Més notícies</a> |
+            <a href="https://actualitat.camins.upc.edu/ca/node/add/noticia" target="_blank">Proposa notícia</a>
+        </div>
+    </div>
+</div>
+```
+El format JSON ha de ser el següent.
+
+```json
+[
+    {
+        "titol" : "",
+        "url" : "",
+        "resum" : "",
+        "imatge" : ""
+    },
+    ....
+]
 ```
 
 ### Llista d'elements
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-list" data-url="https://actualitat.camins.upc.edu/ca/noticies.json/2?callback=callback" data-count="5" data-attribute="nom">
-  <ul class="gw4e-content hidden">#</ul>
+<h1>Software instal·lat<h1>
+<div class="gw4e-list"
+    data-url="https://actualitat.camins.upc.edu/ca/software.json" data-type="json"
+    data-start="0" data-count="5"
+    data-item-template="<li>${nom} (${versio})</li>" data-no-items="No hi ha cap element.">
+    <ul class="gw4e-content hidden">#</ul>
 </div>
 ```
-El format JSONP ha de ser el següent.
+El format JSON ha de ser el següent.
 
-```js
-callback([
+```json
+[
     {
-        "nom" : "Nom de l'element"
+        "nom" : "Nom de l'element",
+        "versio": "1.10"
     },
     ....
-])
-```
-
-
-### Portlet ampliat
-
-```html
-<script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-actualitat-large" data-url="https://actualitat.camins.upc.edu/ca/noticies.json/2?callback=callback" data-count="5">
-  <div class="portlet">
-    <h2>Notícies <i class="icon-news large-icon pull-right"></i></h2>
-    <div class="gw4e-content hidden">#</div>
-    <div class="portlet-footer">
-        <a href="https://actualitat.camins.upc.edu/noticies/2" target="_blank">Més notícies</a> |
-        <a href="https://actualitat.camins.upc.edu/ca/node/add/noticia" target="_blank">Proposa notícia</a>
-    </div>
-  </div>
-</div>
-```
-El format JSONP ha de ser el següent.
-
-```js
-callback([
-    {
-        "titol" : "",
-        "url" : "",
-        "resum" : "",
-        "imatge" : "" // Opcional
-    },
-    ....
-])
+]
 ```
 
 ### Carousel
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-interval="10">
+<div class="gw4e-carousel"
+    data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-type="json"
+    data-start="0" data-count="5"
+    data-interval="10">
     <h2>Treballs finals de Grau i Màster</h2>
     <div class="gw4e-content hidden">#</div>
 </div>
 ```
-El format JSONP ha de ser el següent.
+El format JSON ha de ser el següent.
 
-```js
-callback([
+```json
+[
     {
         "titol" : "",
         "urlResum" : "",
@@ -151,7 +164,7 @@ callback([
         "autor" : ""
     },
     ....
-])
+]
 ```
 
 Llicència
