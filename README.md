@@ -14,6 +14,7 @@ Utilitats que faciliten la integració d'elements externs als genweb (versió 4)
 
   - Versió 2.3.2 de bootstrap.
   - Versió 1.8.3 de jQuery.
+  - Versio 1.10.2 de jQuery UI.
 
 ### Element del DOM eliminat
 
@@ -59,18 +60,16 @@ Al contingut de l'iframe caldria afegir.
 
 ```html
 <script src="https://www3.camins.upc.edu/actualitat/js/gw4.js" type="text/javascript"></script>
-<div class="gw4e-actualitat"
-    data-url="https://actualitat.camins.upc.edu/activitats.json/2" data-type="json"
-    data-start="0" data-count="5"
-    data-no-items="No hi ha cap notícia.">
-    <div class="portlet">
-        <h2>Activitats <i class="icon-event large-icon pull-right"></i></h2>
-        <div class="gw4e-content hidden">#</div>
-        <div class="portlet-footer">
-            <a href="https://actualitat.camins.upc.edu/activitats/2" target="_blank">Més activitats</a> |
-            <a href="https://actualitat.camins.upc.edu/ca/node/add/activitat" target="_blank">Proposa activitat</a>
-        </div>
-    </div>
+<div class="gw4e-actualitat" data-url="https://actualitat.camins.upc.edu/activitats.json/2?callback=callback" data-type="jsonp" data-count="5">
+  <div class="portlet">
+    <h2>Activitats <i class="icon-event large-icon pull-right"></i></h2>
+    <ul class="gw4e-content-list list-portlet">
+      <ul class="gw4e-content-item">
+        <li><a href="${url}" target="_blank" title="${titol}"> ${titol} <img alt="(open in new window)" class="link_blank" src="++genweb++static/images/icon_blank.gif" /></a></li>
+      </ul>
+    </ul>
+    <div class="portlet-footer"><a href="https://actualitat.camins.upc.edu/" target="_blank">Actualitat Camins</a> | <a href="https://actualitat.camins.upc.edu/ca/node/add/activitat" target="_blank">Proposa activitat</a></div>
+  </div>
 </div>
 ```
 El format JSON ha de ser el següent.
@@ -89,18 +88,19 @@ El format JSON ha de ser el següent.
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-actualitat-large"
-     data-url="https://actualitat.camins.upc.edu/activitats.json/2" data-type="json"
-     data-start="0" data-count="5"
-     data-no-items="No hi ha cap notícia.">
-    <div class="portlet">
-        <h2>Notícies <i class="icon-news large-icon pull-right"></i></h2>
-        <div class="gw4e-content hidden">#</div>
-        <div class="portlet-footer">
-            <a href="https://actualitat.camins.upc.edu/noticies/2" target="_blank">Més notícies</a> |
-            <a href="https://actualitat.camins.upc.edu/ca/node/add/noticia" target="_blank">Proposa notícia</a>
+<div class="gw4e-actualitat-large" data-url="https://actualitat.camins.upc.edu/ca/noticies.json/2?callback=callback" data-type="jsonp" data-count="5">
+  <div class="portlet">
+    <h2>Notícies <i class="icon-news large-icon pull-right"></i></h2>
+    <div class="gw4e-content-list container-fluid">
+      <div class="gw4e-content-item">
+        <div class="row">
+          <div class="span3"><a href="${url}" title="${titol}"> <img alt="${imatge.alt}" src="${imatge.src}" /> </a></div>
+          <div class="span9"><h3><a href="${url}" title="${titol}">${titol}</a></h3>${resum}</div>
         </div>
+      </div>
     </div>
+    <div class="portlet-footer"><a href="https://actualitat.camins.upc.edu/" target="_blank">Actualitat Camins</a> | <a href="https://actualitat.camins.upc.edu/ca/node/add/noticia" target="_blank">Proposa notícia</a></div>
+  </div>
 </div>
 ```
 El format JSON ha de ser el següent.
@@ -121,13 +121,17 @@ El format JSON ha de ser el següent.
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<h1>Software instal·lat<h1>
+<h2>Software instal·lat</h2>
 <div class="gw4e-list"
-    data-url="https://actualitat.camins.upc.edu/ca/software.json" data-type="json"
-    data-start="0" data-count="5"
-    data-item-template="<li>${nom} (${versio})</li>" data-no-items="No hi ha cap element.">
-    <ul class="gw4e-content hidden">#</ul>
+  data-url="https://portal.camins.upc.edu/public/api/inventariSoftware/aula/A2-S101/software">
+  <ul class="gw4e-content-list list list-condensed">
+    <ul class="gw4e-content-item">
+      <li>${nom} (${versio})</li>
+    </ul>
+  </ul>
+  <p class="gw4e-content-empty">No hi ha software comú.</p>
 </div>
+
 ```
 El format JSON ha de ser el següent.
 
@@ -145,12 +149,23 @@ El format JSON ha de ser el següent.
 
 ```html
 <script src="https://www3.camins.upc.edu/gw4e/gw4e.js" type="text/javascript"></script>
-<div class="gw4e-carousel"
-    data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-type="json"
-    data-start="0" data-count="5"
-    data-interval="10">
-    <h2>Treballs finals de Grau i Màster</h2>
-    <div class="gw4e-content hidden">#</div>
+<div class="gw4e-carousel" data-url="https://portal.camins.upc.edu/public/tfg/resum/random?n=10" data-interval="10" data-count="4" data-height="20em">
+  <h2>Treballs finals de Grau i Màster</h2>
+  <div class="carousel slide" id="carousel">
+    <div class="gw4e-content-list carousel-inner">
+      <div class="gw4e-content-item">
+        <div class="item">
+          <a href="${urlResum}" title="${titol}"> <img alt="${titol}" src="${urlFoto}" title="${titol}" /></a>
+          <div class="carousel-caption">
+            <h3>${titol}</h3>
+            <h4>${autor}</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="carousel-control left" href="#carousel" data-slide="prev">‹</a>
+    <a class="carousel-control right" href="#carousel" data-slide="next">›</a>
+  </div>
 </div>
 ```
 El format JSON ha de ser el següent.

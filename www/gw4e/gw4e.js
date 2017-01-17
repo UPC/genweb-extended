@@ -1,5 +1,29 @@
 $(function() {
-    $.compact = function(object) {
+    var ratioToHeightPercent = function(ratio) {
+        var x = 16, y = 9;
+        var values = ratio.split(':');
+        if (values.length == 2 && values[0] > 0 && values[1] > 0) {
+            x = values[0];
+            y = values[1];
+        }
+        return (100.0 * y) / x;
+    };
+
+    // Converteix un array multidimensinal a un array d'una dimensió
+    // ex.
+    // [ 'elem1 ' => [
+    //     'elem11' => 'value 11',
+    //     'elem12' => 'value 12'
+    //   ],
+    //   'elem2' => 'value 2'
+    // ]
+    // Passa a ser:
+    // [
+    //   'elem1.elem11' => 'value 11',
+    //   'elem1.elem12' => 'value 12',
+    //   'elem2' => 'value 2'
+    // ]
+    var compactArray = function(object) {
         var recursive = function(object, prefix) {
             result = {};
             for (key in object) {
@@ -14,11 +38,8 @@ $(function() {
         return recursive(object, '');
     }
 
-    var loadList = function($element, $container, template) {
+    var loadList = function($element, $container, template, $empty) {
         var deferred = new $.Deferred();
-        deferred = deferred.done(function() {
-            $element.find('.gw4e-content').html($container).removeClass('hidden');
-        });
 
         var type = $element.attr('data-type');
         if (!type) type = 'json';
@@ -35,16 +56,17 @@ $(function() {
             var first = Math.max(0, start - 1);
             var last = Math.min(json.length, first + count)
             for(var i=first; i<last; i++) {
-                var tags = $.compact(json[i]);
-                var $item = template(json[i], i);
-                var html = $item.html();
+                var item = template(json[i], i);
+                var tags = compactArray(json[i]);
                 $.each(Object.keys(tags), function(index, value) {
                     var re = new RegExp('\\$\\{' + value + '\\}', 'g');
-                    html = html.replace(re, tags[value]);
+                    item = item.replace(re, tags[value]);
                 });
-                $container.append($item.html(html));
+                $container.append(item);
             }
-            if (first >= last) $container.html($element.attr('data-no-items'));
+            if ($empty && first >= last) {
+                $container.replaceWith($empty);
+            }
             return deferred.resolve();
         }).fail(function() {
             return deferred.reject();
@@ -52,15 +74,17 @@ $(function() {
         return deferred;
     };
 
-    var ratioToHeightPercent = function(ratio) {
-        var x = 16, y = 9;
-        var values = ratio.split(':');
-        if (values.length == 2 && values[0] > 0 && values[1] > 0) {
-            x = values[0];
-            y = values[1];
+    jQuery.fn.gw4eFixTemplateUrl = function() {
+        var $this = $(this);
+        if (typeof portal_url != "undefined") {
+            ['ca', 'es', 'en'].forEach(function(language) {
+                $this.find('a[href^="' + portal_url + '/' + language + '/${"]').each(function(index, element) {
+                    $(this).attr('href', $(this).attr('href').replace(portal_url + '/' + language + '/', ''));
+                });
+            });
         }
-        return (100.0 * y) / x;
-    };
+        return this;
+    }
 
     // Atributs HTML
     //   - data-selector: Selector CSS dels elements a ocultar.
@@ -128,30 +152,26 @@ $(function() {
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
     //   - data-interval: Segons entre imatges.
+    //   - data-height: Alçada del carousel.
     jQuery.fn.gw4eCarousel = function() {
         var $this = $(this);
-        var id = $('<div></div>').uniqueId().attr('id');
-        var $container = $('<div class="carousel slide" id="' + id + '">' +
-                             '<div class="carousel-inner"></div>' +
-                             '<a class="carousel-control left" href="#' + id + '" data-slide="prev">‹</a>' +
-                             '<a class="carousel-control right" href="#' + id + '" data-slide="next">›</a>' +
-                           '</div>');
+        var $container = $this.find('.gw4e-content-list');
+        var $item = $this.find('.gw4e-content-item').gw4eFixTemplateUrl().detach();
+        var $empty = false;
+
+        if ($this.attr('data-height')) $item.find('.item').height($this.attr('data-height'));
+        $item.find('img').css('width', '100%').css('height', '100%').css('object-fit', 'cover');
         var template = function(json, position) {
-           var $item = $('<div class="item" style="height:20em">' +
-                             '<a href="${urlResum}" title="${titol}"><img src="${urlFoto}" alt="${titol}" title="${titol}" style="width:100%;height:100%;object-fit:cover"/>' +
-                             '<div class="carousel-caption"><h3>${titol}</h3><h4>${autor}</h4></div></a>' +
-                           '</div>');
-           if (position == 0) $item.addClass('active');
-           return $item;
-       };
-       $this.html($container);
-       loadList($this, $container.find('.carousel-inner'), template).done(function() {
-           // Evita la configuració de genweb4 border-radius: 0px
-           $this.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
-           var interval = $this.attr('data-interval');
-           $this.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
-       });
-       return this;
+            $item.find('.item').toggleClass('active', position == 0);
+            return $item.html();
+        };
+        loadList($this, $container, template, $empty).done(function() {
+            // Evita la configuració de genweb4 border-radius: 0px
+            $this.find('a.carousel-control').attr('style', 'border-radius: 25px !important');
+            var interval = $this.attr('data-interval');
+            $this.find('.carousel').carousel({ interval: interval ? interval * 1000 : interval = false });
+        });
+        return this;
     };
 
     // Atributs HTML
@@ -162,17 +182,17 @@ $(function() {
     //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
     jQuery.fn.gw4eActualitat = function() {
         var $this = $(this);
-
-        var $container = $('<ul class="list-portlet"></ul>');
-        var template = function(json, position) {
-            var $item = $('<li><a href="${url}" title="${titol}" target="_blank">${titol}<img style="margin-left:5px;" class="link_blank" alt="(open in new window)" src="++genweb++static/images/icon_blank.gif"></a></li>');
-            $item.find('a').click(function(event) {
+        var $container = $this.find('.gw4e-content-list');
+        var $empty = false;
+        var item = $this.find('.gw4e-content-item').detach().gw4eFixTemplateUrl().html();
+        var template = function(json, position) { return item; };
+        loadList($this, $container, template, $empty).done(function() {
+            $this.find('ul.list-portlet li a').click(function(event) {
                 event.preventDefault();
                 window.open($(this).attr('href'), '_blank', 'width=800,height=600,scrollbars=yes');
             });
-            return $item;
-        };
-        loadList($this, $container, template);
+            return $this;
+        });
         return this;
     };
 
@@ -184,32 +204,33 @@ $(function() {
     //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
     jQuery.fn.gw4eActualitatLarge = function() {
         var $this = $(this);
-
-        var $container = $('<div class="container-fluid"></div>');
+        var $container = $this.find('.gw4e-content-list');
+        var $empty = false;
+        // var item = $this.find('.gw4e-content-item').detach().html();
+        var item = $this.find('.gw4e-content-item').detach().gw4eFixTemplateUrl().html();
         var template = function(json, position) {
-            var first = '<a href="${url}" title="${titol}"><img src="${imatge.src}" alt="${imatge.alt}"/></a>';
-            var second = '<h3><a href="${url}" title="${titol}">${titol}</a></h3>${resum}</div>';
-            if (json.imatge)
-                return $('<div class="row"><div class="span3">' + first + '</div><div class="span9">' + second + '</div></div>');
-            else
-                return $('<div class="row"><div class="span12">' + second + '</div></div>');
+            if (json.imatge) return item;
+            var $item = $('<div>/div>').html(item);
+            $item.find('.span3').remove();
+            $item.find('.span9').removeClass('span9').addClass('span12');
+            return $item.html();
         };
-        loadList($this, $container, template);
+        loadList($this, $container, template, $empty);
         return this;
     };
 
     // Atributs HTML
     //   - data-url: Data source url (jsonp format)
-    //   - data-item-template: Plantilla de l'item. Es poden utilitzar els tags ${nom-atribut}
-    //   - data-no-items: Text en cas que no hi hagi elements mostrar. (default="")
     //   - data-type: [json|jsonp] (default=json)
     //   - data-start: Primer element a mostrar (default=1)
     //   - data-count: Número d'elements a mostrar (default=all)
     jQuery.fn.gw4eList = function() {
         var $this = $(this);
-        var $container = $('<div></div>');
-        var template = function(json, position) { return $($this.attr('data-item-template')); };
-        loadList($this, $container, template);
+        var $container = $this.find('.gw4e-content-list');
+        var $empty = $this.find('.gw4e-content-empty').detach();
+        var item = $this.find('.gw4e-content-item').detach().gw4eFixTemplateUrl().html();
+        var template = function(json, position) { return item; };
+        loadList($this, $container, template, $empty);
         return $this;
     };
 
