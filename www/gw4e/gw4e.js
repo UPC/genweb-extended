@@ -210,7 +210,7 @@ $(function() {
         var item = $this.find('.gw4e-content-item').detach().gw4eFixTemplateUrl().html();
         var template = function(json, position) {
             if (json.imatge) return item;
-            var $item = $('<div>/div>').html(item);
+            var $item = $('<div></div>').html(item);
             $item.find('.span3').remove();
             $item.find('.span9').removeClass('span9').addClass('span12');
             return $item.html();
