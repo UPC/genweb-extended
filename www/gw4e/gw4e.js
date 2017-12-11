@@ -100,10 +100,10 @@ $(function() {
     jQuery.fn.gw4eIframe = function() {
         var $this = $(this);
         var $container = $this.find('.gw4e-content').html('');
-        var $iframe = $('<iframe frameborder="0" scrolling="no" width="100%" height="1000">Hola</iframe>')
+        var $iframe = $('<iframe frameborder="0" scrolling="no" width="100%" height="1000">#</iframe>')
             .attr('src', $this.attr('data-url'));
         $container.append($iframe);
-        $.getScript('https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.5/iframeResizer.min.js').done(function() {
+        $.getScript('https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.15/iframeResizer.min.js').done(function() {
             $iframe.iFrameResize([{}]);
             $container.removeClass('hidden');
         });
